@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — MIH.GG</title>
+<link rel="stylesheet" href="/css/shared.css">
+<style>
+body { display:flex; }
+.sidebar {
+  width:240px; min-height:100vh; flex-shrink:0;
+  background:var(--bg2); border-right:1px solid var(--border);
+  display:flex; flex-direction:column;
+  padding:28px 0; position:sticky; top:0; height:100vh; overflow-y:auto;
+}
+.sidebar-logo { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; letter-spacing:5px; color:#fff; padding:0 24px; margin-bottom:8px; }
+.sidebar-logo span { color:var(--green); text-shadow:var(--glow-g); }
+.sidebar-role { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--green); letter-spacing:3px; padding:0 24px; margin-bottom:32px; }
+.sidebar-section { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--text2); padding:0 24px; margin-bottom:8px; margin-top:16px; }
+.sidebar-link {
+  display:flex; align-items:center; gap:10px;
+  padding:11px 24px; color:var(--text2); text-decoration:none;
+  font-size:13px; font-weight:700; transition:all .2s; cursor:none;
+}
+.sidebar-link:hover { color:var(--text); background:rgba(255,255,255,0.04); }
+.sidebar-link.active { color:var(--green); background:rgba(168,240,176,0.07); border-right:2px solid var(--green); }
+.sidebar-link .icon { font-size:16px; width:20px; text-align:center; }
+.sidebar-footer { margin-top:auto; padding:16px 24px; border-top:1px solid var(--border); }
+.sidebar-user { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.sidebar-avatar { width:34px; height:34px; border-radius:50%; background:var(--bg3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:16px; overflow:hidden; }
+.sidebar-avatar img { width:100%; height:100%; object-fit:cover; }
+.sidebar-username { font-size:13px; font-weight:800; color:var(--white); }
+.sidebar-logout { width:100%; background:none; border:1px solid var(--border); color:var(--text2); padding:9px; border-radius:8px; font-size:12px; cursor:none; transition:all .2s; font-family:'Nunito',sans-serif; font-weight:700; }
+.sidebar-logout:hover { border-color:var(--red); color:var(--red); }
+
+.admin-main { flex:1; padding:40px 48px; overflow-x:hidden; }
+.page-section { display:none; }
+.page-section.active { display:block; animation:fadeIn .3s ease; }
+.page-title { font-family:'Rajdhani',sans-serif; font-size:36px; font-weight:700; color:#fff; letter-spacing:2px; margin-bottom:6px; }
+.page-title span { color:var(--green); }
+.page-sub { font-size:14px; color:var(--text2); margin-bottom:36px; }
+
+.cards-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:18px; margin-bottom:36px; }
+.stat-card { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:22px; }
+.stat-card-label { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--text2); margin-bottom:10px; }
+.stat-card-val { font-family:'Rajdhani',sans-serif; font-size:32px; font-weight:700; color:#fff; }
+.stat-card-val span { color:var(--green); }
+.stat-card-sub { font-size:12px; color:var(--text2); margin-top:4px; }
+
+.panel-box { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:28px; margin-bottom:24px; }
+.panel-box-title { font-family:'Rajdhani',sans-serif; font-size:18px; font-weight:700; color:#fff; letter-spacing:1px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; }
+
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-grid.cols3 { grid-template-columns:1fr 1fr 1fr; }
+.form-grid.full { grid-template-columns:1fr; }
+.form-col-span { grid-column:span 2; }
+.form-col-span3 { grid-column:span 3; }
+
+.save-btn { background:linear-gradient(135deg,var(--purple),var(--purple2)); color:#fff; border:none; border-radius:9px; padding:13px 28px; font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:700; letter-spacing:2px; cursor:none; transition:transform .2s,box-shadow .2s; }
+.save-btn:hover { transform:translateY(-2px); box-shadow:var(--glow-p); }
+
+.table { width:100%; border-collapse:collapse; }
+.table th { text-align:left; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--text2); padding:10px 14px; border-bottom:1px solid var(--border); }
+.table td { padding:13px 14px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:13px; vertical-align:middle; }
+.table tr:hover td { background:rgba(255,255,255,0.02); }
+.table-avatar { width:32px; height:32px; border-radius:50%; background:var(--bg3); display:flex; align-items:center; justify-content:center; font-size:15px; overflow:hidden; }
+.table-avatar img { width:100%; height:100%; object-fit:cover; }
+.user-name-cell { display:flex; align-items:center; gap:10px; }
+.role-badge { font-family:'JetBrains Mono',monospace; font-size:9px; padding:3px 8px; border-radius:100px; letter-spacing:1px; }
+.role-admin { background:rgba(168,240,176,0.1); color:var(--green); border:1px solid rgba(168,240,176,0.2); }
+.role-viewer { background:rgba(123,92,222,0.1); color:var(--violet); border:1px solid rgba(123,92,222,0.2); }
+.action-btn { background:none; border:1px solid var(--border); color:var(--text2); padding:6px 12px; border-radius:7px; font-size:11px; cursor:none; transition:all .2s; margin-right:6px; font-family:'Nunito',sans-serif; font-weight:700; }
+.action-btn:hover { border-color:var(--purple); color:var(--violet); }
+.action-btn.danger:hover { border-color:var(--red); color:var(--red); }
+
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--border); }
+.toggle-row:last-child { border-bottom:none; }
+.toggle-label { font-size:14px; font-weight:700; color:var(--text); }
+.toggle-sub { font-size:12px; color:var(--text2); margin-top:2px; }
+.toggle-switch { position:relative; width:48px; height:26px; flex-shrink:0; }
+.toggle-switch input { opacity:0; width:0; height:0; }
+.toggle-slider { position:absolute; inset:0; background:var(--bg3); border-radius:13px; cursor:none; transition:background .3s; border:1px solid var(--border); }
+.toggle-slider::after { content:''; position:absolute; width:18px; height:18px; border-radius:50%; background:var(--text2); top:3px; left:3px; transition:transform .3s,background .3s; }
+.toggle-switch input:checked + .toggle-slider { background:rgba(168,240,176,0.15); border-color:rgba(168,240,176,0.3); }
+.toggle-switch input:checked + .toggle-slider::after { transform:translateX(22px); background:var(--green); box-shadow:var(--glow-g); }
+
+.game-rank-form { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px; }
+.game-tabs { display:flex; gap:4px; background:var(--bg3); border-radius:10px; padding:5px; margin-bottom:24px; width:fit-content; }
+.gtab { font-family:'Rajdhani',sans-serif; font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; padding:10px 22px; border:none; border-radius:7px; color:var(--text2); background:transparent; cursor:none; transition:all .3s; }
+.gtab.active { background:var(--panel); color:#fff; box-shadow:0 2px 10px rgba(0,0,0,0.3); }
+
+.post-list-item { display:flex; align-items:flex-start; gap:14px; padding:16px 0; border-bottom:1px solid var(--border); }
+.post-list-item:last-child { border-bottom:none; }
+.post-list-emoji { font-size:28px; width:44px; height:44px; background:var(--bg3); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.post-list-title { font-size:14px; font-weight:800; color:#fff; margin-bottom:4px; }
+.post-list-meta { font-size:12px; color:var(--text2); display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.post-actions { margin-left:auto; display:flex; gap:6px; }
+
+.agents-tag-input { display:flex; flex-wrap:wrap; gap:7px; background:rgba(13,27,75,0.4); border:1.5px solid var(--border); border-radius:9px; padding:8px 12px; min-height:44px; }
+.agent-tag { display:flex; align-items:center; gap:5px; background:rgba(123,92,222,0.15); border:1px solid rgba(123,92,222,0.2); border-radius:6px; padding:4px 10px; font-size:12px; font-weight:700; color:var(--violet); }
+.agent-tag button { background:none; border:none; color:var(--text2); cursor:none; font-size:13px; line-height:1; transition:color .2s; }
+.agent-tag button:hover { color:var(--red); }
+.agent-tag-inp { background:none; border:none; color:var(--text); font-size:13px; outline:none; font-family:'Nunito',sans-serif; min-width:80px; }
+
+@media(max-width:900px){ .sidebar{width:60px;} .sidebar-link span{display:none} .sidebar-logo,.sidebar-role,.sidebar-section,.sidebar-username,.sidebar-logout{display:none} .admin-main{padding:28px 20px} .form-grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<div class="toast-wrap"></div>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">MIH<span>.GG</span></div>
+  <div class="sidebar-role">// painel admin</div>
+
+  <div class="sidebar-section">Geral</div>
+  <a class="sidebar-link active" data-page="overview" onclick="goPage('overview')"><span class="icon">📊</span><span>Visão Geral</span></a>
+  <a class="sidebar-link" data-page="status" onclick="goPage('status')"><span class="icon">🟢</span><span>Status & Live</span></a>
+
+  <div class="sidebar-section">Jogos</div>
+  <a class="sidebar-link" data-page="games" onclick="goPage('games')"><span class="icon">🎮</span><span>Ranks & Agentes</span></a>
+
+  <div class="sidebar-section">Conteúdo</div>
+  <a class="sidebar-link" data-page="posts" onclick="goPage('posts')"><span class="icon">📝</span><span>Posts</span></a>
+  <a class="sidebar-link" data-page="schedule" onclick="goPage('schedule')"><span class="icon">📅</span><span>Agenda</span></a>
+
+  <div class="sidebar-section">Usuários</div>
+  <a class="sidebar-link" data-page="users" onclick="goPage('users')"><span class="icon">👥</span><span>Usuários</span></a>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sb-avatar">👑</div>
+      <div class="sidebar-username" id="sb-name">Mih</div>
+    </div>
+    <button class="sidebar-logout" onclick="Auth.logout()">Sair</button>
+  </div>
+</aside>
+
+<main class="admin-main">
+
+  <!-- OVERVIEW -->
+  <div class="page-section active" id="page-overview">
+    <div class="page-title">Visão <span>Geral</span></div>
+    <p class="page-sub">Bem-vinda de volta, Mih! Aqui tem um resumo do seu hub.</p>
+    <div class="cards-row" id="overview-stats"></div>
+    <div class="panel-box">
+      <div class="panel-box-title">Status Atual</div>
+      <div id="overview-status-display"></div>
+    </div>
+    <div class="panel-box">
+      <div class="panel-box-title">Últimas Atividades</div>
+      <div id="overview-activity" style="color:var(--text2);font-size:13px;line-height:1.8"></div>
+    </div>
+  </div>
+
+  <!-- STATUS & LIVE -->
+  <div class="page-section" id="page-status">
+    <div class="page-title">Status <span>& Live</span></div>
+    <p class="page-sub">Controle o que aparece no site pra todo mundo ver em tempo real.</p>
+
+    <div class="panel-box">
+      <div class="panel-box-title">Visibilidade Online</div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">Aparecer como Online</div><div class="toggle-sub">Mostra o ponto verde na nav</div></div>
+        <label class="toggle-switch"><input type="checkbox" id="toggle-online"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">Estou ao vivo agora!</div><div class="toggle-sub">Ativa o banner de live na homepage</div></div>
+        <label class="toggle-switch"><input type="checkbox" id="toggle-live"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <div class="panel-box-title">Configurações de Status</div>
+      <div class="form-grid">
+        <div class="input-wrap">
+          <label class="input-label">Mensagem de Status</label>
+          <input class="input-field" id="status-msg" placeholder="Ex: Subindo de rank!">
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Jogo Atual</label>
+          <select class="input-field" id="current-game" style="cursor:none">
+            <option value="Valorant">Valorant</option>
+            <option value="Overwatch 2">Overwatch 2</option>
+            <option value="Minecraft">Minecraft</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div class="input-wrap form-col-span">
+          <label class="input-label">URL da Stream (Twitch/YouTube)</label>
+          <input class="input-field" id="stream-url" placeholder="https://twitch.tv/mih_plays">
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <button class="save-btn" onclick="saveStatus()">Salvar Status</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAMES -->
+  <div class="page-section" id="page-games">
+    <div class="page-title">Ranks <span>& Agentes</span></div>
+    <p class="page-sub">Atualize seus ranks, stats e agentes favoritos em cada jogo.</p>
+
+    <div class="game-tabs">
+      <button class="gtab active" data-gtab="valorant" onclick="switchGameTab('valorant')">⚔️ Valorant</button>
+      <button class="gtab" data-gtab="overwatch" onclick="switchGameTab('overwatch')">🛡️ Overwatch</button>
+      <button class="gtab" data-gtab="minecraft" onclick="switchGameTab('minecraft')">⛏️ Minecraft</button>
+    </div>
+
+    <div id="game-tab-valorant" class="game-tab-panel">
+      <div class="panel-box">
+        <div class="panel-box-title">Valorant</div>
+        <div class="game-rank-form">
+          <div class="input-wrap">
+            <label class="input-label">Rank</label>
+            <select class="input-field" id="val-rank" style="cursor:none">
+              <option>Iron I</option><option>Iron II</option><option>Iron III</option>
+              <option>Bronze I</option><option>Bronze II</option><option>Bronze III</option>
+              <option>Silver I</option><option>Silver II</option><option>Silver III</option>
+              <option>Gold I</option><option>Gold II</option><option>Gold III</option>
+              <option>Platinum I</option><option>Platinum II</option><option>Platinum III</option>
+              <option>Diamond I</option><option>Diamond II</option><option>Diamond III</option>
+              <option>Ascendant I</option><option>Ascendant II</option><option>Ascendant III</option>
+              <option>Immortal I</option><option>Immortal II</option><option>Immortal III</option>
+              <option>Radiant</option>
+            </select>
+          </div>
+          <div class="input-wrap">
+            <label class="input-label">RR Atual (0-100)</label>
+            <input class="input-field" id="val-rr" type="number" min="0" max="100" placeholder="63">
+          </div>
+          <div class="input-wrap">
+            <label class="input-label">Win Rate (%)</label>
+            <input class="input-field" id="val-wr" type="number" min="0" max="100" placeholder="68">
+          </div>
+          <div class="input-wrap">
+            <label class="input-label">K/D Ratio</label>
+            <input class="input-field" id="val-kd" type="number" step="0.1" placeholder="2.4">
+          </div>
+          <div class="input-wrap">
+            <label class="input-label">Total de Partidas</label>
+            <input class="input-field" id="val-matches" type="number" placeholder="247">
+          </div>
+        </div>
+        <div style="margin-top:20px" class="input-wrap">
+          <label class="input-label">Agentes Favoritos (nome,icone por linha — ex: Jett,🌪️)</label>
+          <textarea class="input-field" id="val-agents" style="height:110px" placeholder="Jett,🌪️&#10;Sage,🌿&#10;Clove,💊&#10;Raze,💥"></textarea>
+        </div>
+        <div style="margin-top:20px">
+          <button class="save-btn" onclick="saveGame('valorant')">Salvar Valorant</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="game-tab-overwatch" class="game-tab-panel" style="display:none">
+      <div class="panel-box">
+        <div class="panel-box-title">Overwatch 2</div>
+        <div class="game-rank-form">
+          <div class="input-wrap">
+            <label class="input-label">Rank</label>
+            <select class="input-field" id="ow-rank" style="cursor:none">
+              <option>Bronze 5</option><option>Bronze 4</option><option>Bronze 3</option><option>Bronze 2</option><option>Bronze 1</option>
+              <option>Silver 5</option><option>Silver 4</option><option>Silver 3</option><option>Silver 2</option><option>Silver 1</option>
+              <option>Gold 5</option><option>Gold 4</option><option>Gold 3</option><option>Gold 2</option><option>Gold 1</option>
+              <option>Platinum 5</option><option>Platinum 4</option><option>Platinum 3</option><option>Platinum 2</option><option>Platinum 1</option>
+              <option>Diamond 5</option><option>Diamond 4</option><option>Diamond 3</option><option>Diamond 2</option><option>Diamond 1</option>
+              <option>Master 5</option><option>Master 4</option><option>Master 3</option><option>Master 2</option><option>Master 1</option>
+              <option>Grandmaster 5</option><option>Grandmaster 1</option>
+              <option>Top 500</option>
+            </select>
+          </div>
+          <div class="input-wrap">
+            <label class="input-label">Win Rate (%)</label>
+            <input class="input-field" id="ow-wr" type="number" min="0" max="100" placeholder="61">
+          </div>
+          <div class="input-wrap">
+            <label class="input-label">Cura por Partida</label>
+            <input class="input-field" id="ow-heal" type="number" placeholder="18000">
+          </div>
+          <div class="input-wrap">
+            <label class="input-label">Total de Partidas</label>
+            <input class="input-field" id="ow-matches" type="number" placeholder="183">
+          </div>
+        </div>
+        <div style="margin-top:20px" class="input-wrap">
+          <label class="input-label">Heróis Favoritos (nome,icone por linha — ex: Ana,💉)</label>
+          <textarea class="input-field" id="ow-heroes" style="height:110px" placeholder="Ana,💉&#10;Kiriko,🌸&#10;Tracer,⚡&#10;Sojourn,🎯"></textarea>
+        </div>
+        <div style="margin-top:20px">
+          <button class="save-btn" onclick="saveGame('overwatch')">Salvar Overwatch</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="game-tab-minecraft" class="game-tab-panel" style="display:none">
+      <div class="panel-box">
+        <div class="panel-box-title">Minecraft</div>
+        <div class="game-rank-form">
+          <div class="input-wrap">
+            <label class="input-label">Versão</label>
+            <input class="input-field" id="mc-version" placeholder="1.21.4">
+          </div>
+          <div class="input-wrap">
+            <label class="input-label">Horas no Survival</label>
+            <input class="input-field" id="mc-hours" type="number" placeholder="340">
+          </div>
+          <div class="input-wrap">
+            <label class="input-label">Mundo Ativo</label>
+            <input class="input-field" id="mc-active" placeholder="Mundo Survival">
+          </div>
+        </div>
+        <div style="margin-top:20px" class="input-wrap">
+          <label class="input-label">Worlds (um por linha)</label>
+          <textarea class="input-field" id="mc-worlds" style="height:90px" placeholder="Survival Principal&#10;SMP Friends&#10;Creative Build"></textarea>
+        </div>
+        <div style="margin-top:20px">
+          <button class="save-btn" onclick="saveGame('minecraft')">Salvar Minecraft</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POSTS -->
+  <div class="page-section" id="page-posts">
+    <div class="page-title">Posts <span>do Site</span></div>
+    <p class="page-sub">Crie, edite e delete os posts do hub.</p>
+
+    <div class="panel-box">
+      <div class="panel-box-title">Novo Post</div>
+      <div class="form-grid">
+        <div class="input-wrap">
+          <label class="input-label">Título</label>
+          <input class="input-field" id="np-title" placeholder="Título do post">
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Jogo</label>
+          <select class="input-field" id="np-game" style="cursor:none">
+            <option value="Valorant">Valorant</option>
+            <option value="Overwatch">Overwatch</option>
+            <option value="Minecraft">Minecraft</option>
+            <option value="Geral">Geral</option>
+          </select>
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Emoji</label>
+          <input class="input-field" id="np-emoji" placeholder="🎮" maxlength="4">
+        </div>
+        <div class="input-wrap" style="display:flex;align-items:flex-end;gap:10px">
+          <label class="toggle-switch" style="flex-shrink:0"><input type="checkbox" id="np-exclusive"><span class="toggle-slider"></span></label>
+          <div><div class="toggle-label">Exclusivo</div><div class="toggle-sub">Só para logados</div></div>
+        </div>
+        <div class="input-wrap form-col-span">
+          <label class="input-label">Conteúdo</label>
+          <textarea class="input-field" id="np-content" style="height:130px" placeholder="Escreva o conteúdo completo do post aqui..."></textarea>
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <button class="save-btn" onclick="createPost()">Publicar Post</button>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <div class="panel-box-title">Posts Publicados <span id="posts-count" style="font-size:14px;color:var(--text2);font-weight:400"></span></div>
+      <div id="posts-admin-list"></div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div class="page-section" id="page-schedule">
+    <div class="page-title">Agenda <span>de Lives</span></div>
+    <p class="page-sub">Adicione os eventos e streams do mês.</p>
+
+    <div class="panel-box">
+      <div class="panel-box-title">Adicionar Evento</div>
+      <div class="form-grid cols3">
+        <div class="input-wrap">
+          <label class="input-label">Dia do mês</label>
+          <input class="input-field" id="ev-day" type="number" min="1" max="31" placeholder="15">
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Horário</label>
+          <input class="input-field" id="ev-time" placeholder="21h">
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Emoji/Ícone</label>
+          <input class="input-field" id="ev-icon" placeholder="⚔️" maxlength="4">
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Nome do Evento</label>
+          <input class="input-field" id="ev-name" placeholder="Ranked Valorant">
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Descrição curta</label>
+          <input class="input-field" id="ev-desc" placeholder="Subindo de rank!">
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Jogo</label>
+          <select class="input-field" id="ev-game" style="cursor:none">
+            <option value="Valorant">Valorant</option>
+            <option value="Overwatch">Overwatch</option>
+            <option value="Minecraft">Minecraft</option>
+            <option value="Geral">Geral</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <button class="save-btn" onclick="addEvent()">Adicionar Evento</button>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <div class="panel-box-title">Eventos do Mês</div>
+      <div id="schedule-admin-list"></div>
+    </div>
+  </div>
+
+  <!-- USERS -->
+  <div class="page-section" id="page-users">
+    <div class="page-title">Gerenciar <span>Usuários</span></div>
+    <p class="page-sub">Crie contas para os seus viewers e gerencie quem tem acesso.</p>
+
+    <div class="panel-box">
+      <div class="panel-box-title">Criar Nova Conta</div>
+      <div class="form-grid">
+        <div class="input-wrap">
+          <label class="input-label">Usuário (login)</label>
+          <input class="input-field" id="nu-username" placeholder="nomeusuario">
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Senha</label>
+          <input class="input-field" id="nu-password" type="password" placeholder="senha segura">
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Nome de exibição</label>
+          <input class="input-field" id="nu-display" placeholder="Nome Bonito">
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Cor do nome</label>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:4px">
+            <input type="color" id="nu-color" value="#a8f0b0" style="width:40px;height:38px;border:none;background:none;cursor:none">
+            <span id="nu-color-preview" style="font-size:14px;font-weight:800;color:#a8f0b0">Preview</span>
+          </div>
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Efeito do nome</label>
+          <select class="input-field" id="nu-effect" style="cursor:none">
+            <option value="none">Sem efeito</option>
+            <option value="glow">✨ Brilho</option>
+            <option value="rainbow">🌈 Arco-íris</option>
+            <option value="pulse">💫 Pulsante</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <button class="save-btn" onclick="createUser()">Criar Conta</button>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <div class="panel-box-title">Usuários Cadastrados <span id="users-count" style="font-size:14px;color:var(--text2);font-weight:400"></span></div>
+      <table class="table">
+        <thead><tr><th>Usuário</th><th>Nome</th><th>Efeito</th><th>Função</th><th>Cadastro</th><th>Ações</th></tr></thead>
+        <tbody id="users-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script src="/js/shared.js"></script>
+<script>
+// Auth guard
+if (!Auth.isLoggedIn() || !Auth.isAdmin()) { window.location.href = '/login'; }
+
+let siteConfig = {};
+
+async function loadAll() {
+  const user = Auth.getUser();
+  if (user) {
+    document.getElementById('sb-name').textContent = user.profile?.displayName || user.username;
+    const av = document.getElementById('sb-avatar');
+    if (user.profile?.avatar) av.innerHTML = `<img src="${user.profile.avatar}">`;
+    else av.textContent = user.profile?.badges?.[0] || '👑';
+  }
+
+  try {
+    siteConfig = await Auth.get('/config');
+    renderOverview();
+    populateStatusForm();
+    populateGameForms();
+  } catch(e) { toast('Erro ao carregar config: ' + e.message, 'error'); }
+
+  await loadPosts();
+  await loadUsers();
+  await loadSchedule();
+  hookHover();
+}
+
+function goPage(name) {
+  document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelector(`[data-page="${name}"]`).classList.add('active');
+
+  if (name === 'users') loadUsers();
+  if (name === 'posts') loadPosts();
+  if (name === 'schedule') loadSchedule();
+}
+
+function switchGameTab(tab) {
+  document.querySelectorAll('.game-tab-panel').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.gtab').forEach(b => b.classList.remove('active'));
+  document.getElementById('game-tab-' + tab).style.display = 'block';
+  document.querySelector(`[data-gtab="${tab}"]`).classList.add('active');
+}
+
+// OVERVIEW
+function renderOverview() {
+  const g = siteConfig.games;
+  document.getElementById('overview-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-card-label">Status</div><div class="stat-card-val"><span>${siteConfig.status==='online'?'🟢':'⚫'}</span> ${siteConfig.status}</div><div class="stat-card-sub">${siteConfig.statusMessage||'—'}</div></div>
+    <div class="stat-card"><div class="stat-card-label">Rank Val.</div><div class="stat-card-val"><span>${g?.valorant?.rank?.split(' ')[0]||'—'}</span></div><div class="stat-card-sub">${g?.valorant?.rr||0} RR</div></div>
+    <div class="stat-card"><div class="stat-card-label">Rank OW2</div><div class="stat-card-val"><span>${g?.overwatch?.rank?.split(' ')[0]||'—'}</span></div><div class="stat-card-sub">${g?.overwatch?.winRate||0}% WR</div></div>
+    <div class="stat-card"><div class="stat-card-label">Minecraft</div><div class="stat-card-val"><span>${g?.minecraft?.hours||0}</span>h</div><div class="stat-card-sub">${g?.minecraft?.version||'—'}</div></div>
+  `;
+  document.getElementById('overview-status-display').innerHTML = `
+    <div style="display:flex;align-items:center;gap:16px;padding:14px;background:var(--bg3);border-radius:12px">
+      <div style="width:12px;height:12px;border-radius:50%;background:${siteConfig.status==='online'?'var(--green)':'var(--text2)'};box-shadow:${siteConfig.status==='online'?'var(--glow-g)':'none'}"></div>
+      <div><div style="font-size:14px;font-weight:800;color:#fff">${siteConfig.status==='online'?'Mih está ONLINE':'Mih está OFFLINE'}</div><div style="font-size:12px;color:var(--text2)">${siteConfig.isLive?'🔴 AO VIVO — '+siteConfig.currentGame:siteConfig.statusMessage||'—'}</div></div>
+    </div>
+  `;
+  document.getElementById('overview-activity').innerHTML = `
+    Última atualização: ${new Date(siteConfig.lastUpdated).toLocaleString('pt-BR')}<br>
+    Jogo atual: <strong style="color:var(--green)">${siteConfig.currentGame||'—'}</strong><br>
+    Stream URL: ${siteConfig.streamUrl||'não configurada'}
+  `;
+}
+
+// STATUS FORM
+function populateStatusForm() {
+  document.getElementById('toggle-online').checked = siteConfig.status === 'online';
+  document.getElementById('toggle-live').checked = !!siteConfig.isLive;
+  document.getElementById('status-msg').value = siteConfig.statusMessage || '';
+  document.getElementById('current-game').value = siteConfig.currentGame || 'Valorant';
+  document.getElementById('stream-url').value = siteConfig.streamUrl || '';
+}
+
+async function saveStatus() {
+  const body = {
+    status: document.getElementById('toggle-online').checked ? 'online' : 'offline',
+    isLive: document.getElementById('toggle-live').checked,
+    statusMessage: document.getElementById('status-msg').value,
+    currentGame: document.getElementById('current-game').value,
+    streamUrl: document.getElementById('stream-url').value,
+  };
+  try {
+    await Auth.patch('/admin/config', body);
+    siteConfig = { ...siteConfig, ...body };
+    renderOverview();
+    toast('Status atualizado! O site reflete em tempo real 🟢', 'success');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// GAME FORMS
+function populateGameForms() {
+  const g = siteConfig.games;
+  if (!g) return;
+
+  // Valorant
+  const vr = document.getElementById('val-rank');
+  if (vr) { Array.from(vr.options).forEach(o => { if (o.value === g.valorant?.rank) o.selected = true; }); }
+  setVal('val-rr', g.valorant?.rr);
+  setVal('val-wr', g.valorant?.winRate);
+  setVal('val-kd', g.valorant?.kd);
+  setVal('val-matches', g.valorant?.matches);
+  if (g.valorant?.mainAgents) {
+    document.getElementById('val-agents').value = g.valorant.mainAgents.map((a,i) => a + ',' + (g.valorant.agentIcons[i]||'🎮')).join('\n');
+  }
+
+  // OW
+  const owr = document.getElementById('ow-rank');
+  if (owr) { Array.from(owr.options).forEach(o => { if (o.value === g.overwatch?.rank) o.selected = true; }); }
+  setVal('ow-wr', g.overwatch?.winRate);
+  setVal('ow-heal', g.overwatch?.healPerGame);
+  setVal('ow-matches', g.overwatch?.matches);
+  if (g.overwatch?.mainHeroes) {
+    document.getElementById('ow-heroes').value = g.overwatch.mainHeroes.map((h,i) => h + ',' + (g.overwatch.heroIcons[i]||'🎮')).join('\n');
+  }
+
+  // MC
+  setVal('mc-version', g.minecraft?.version);
+  setVal('mc-hours', g.minecraft?.hours);
+  setVal('mc-active', g.minecraft?.activeWorld);
+  if (g.minecraft?.worlds) document.getElementById('mc-worlds').value = g.minecraft.worlds.join('\n');
+}
+
+function setVal(id, val) { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; }
+
+function parseAgents(textarea) {
+  const lines = textarea.split('\n').filter(l => l.trim());
+  return { names: lines.map(l => l.split(',')[0]?.trim()).filter(Boolean), icons: lines.map(l => l.split(',')[1]?.trim() || '🎮') };
+}
+
+async function saveGame(game) {
+  let body = {};
+  if (game === 'valorant') {
+    const agents = parseAgents(document.getElementById('val-agents').value);
+    body = { rank: document.getElementById('val-rank').value, rr: +document.getElementById('val-rr').value, winRate: +document.getElementById('val-wr').value, kd: +document.getElementById('val-kd').value, matches: +document.getElementById('val-matches').value, mainAgents: agents.names, agentIcons: agents.icons };
+  } else if (game === 'overwatch') {
+    const heroes = parseAgents(document.getElementById('ow-heroes').value);
+    body = { rank: document.getElementById('ow-rank').value, winRate: +document.getElementById('ow-wr').value, healPerGame: +document.getElementById('ow-heal').value, matches: +document.getElementById('ow-matches').value, mainHeroes: heroes.names, heroIcons: heroes.icons };
+  } else if (game === 'minecraft') {
+    body = { version: document.getElementById('mc-version').value, hours: +document.getElementById('mc-hours').value, activeWorld: document.getElementById('mc-active').value, worlds: document.getElementById('mc-worlds').value.split('\n').filter(l => l.trim()) };
+  }
+  try {
+    await Auth.patch('/admin/config/games/' + game, body);
+    siteConfig.games[game] = { ...siteConfig.games[game], ...body };
+    renderOverview();
+    toast(game.charAt(0).toUpperCase() + game.slice(1) + ' atualizado!', 'success');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// POSTS
+async function loadPosts() {
+  try {
+    const posts = await fetch('/api/posts', { headers: { Authorization: 'Bearer ' + Auth.getToken() } }).then(r => r.json());
+    document.getElementById('posts-count').textContent = '(' + posts.length + ')';
+    const gameCss = { Valorant:'tag-val', Overwatch:'tag-ow', Minecraft:'tag-mc', Geral:'tag-gen' };
+    document.getElementById('posts-admin-list').innerHTML = posts.map(p => `
+      <div class="post-list-item">
+        <div class="post-list-emoji">${p.emoji}</div>
+        <div style="flex:1">
+          <div class="post-list-title">${p.title}</div>
+          <div class="post-list-meta">
+            <span class="tag ${gameCss[p.game]||'tag-gen'}">${p.game}</span>
+            ${p.exclusive ? '<span class="tag tag-exc">Exclusivo</span>' : ''}
+            <span>❤️ ${p.likes}</span>
+            <span>💬 ${p.comments?.length||0}</span>
+            <span>${fmtDate(p.createdAt)}</span>
+          </div>
+        </div>
+        <div class="post-actions">
+          <button class="action-btn danger" onclick="deletePost('${p.id}')">Deletar</button>
+        </div>
+      </div>
+    `).join('') || '<p style="color:var(--text2);font-size:13px">Nenhum post ainda.</p>';
+  } catch(e) { toast('Erro: ' + e.message, 'error'); }
+}
+
+async function createPost() {
+  const body = { title: document.getElementById('np-title').value, content: document.getElementById('np-content').value, game: document.getElementById('np-game').value, emoji: document.getElementById('np-emoji').value || '📝', exclusive: document.getElementById('np-exclusive').checked };
+  if (!body.title || !body.content) { toast('Preencha título e conteúdo!', 'warn'); return; }
+  try {
+    await Auth.post('/admin/posts', body);
+    toast('Post publicado!', 'success');
+    document.getElementById('np-title').value = '';
+    document.getElementById('np-content').value = '';
+    document.getElementById('np-emoji').value = '';
+    document.getElementById('np-exclusive').checked = false;
+    await loadPosts();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function deletePost(id) {
+  if (!confirm('Deletar este post?')) return;
+  try { await Auth.delete('/admin/posts/' + id); toast('Post deletado', 'success'); await loadPosts(); }
+  catch(e) { toast(e.message, 'error'); }
+}
+
+// SCHEDULE
+async function loadSchedule() {
+  try {
+    const schedule = await fetch('/api/schedule').then(r => r.json());
+    const gameColor = { Valorant:'#ff4655', Overwatch:'#ff8c00', Minecraft:'var(--green2)', Geral:'var(--violet)' };
+    document.getElementById('schedule-admin-list').innerHTML = schedule.map(e => `
+      <div class="event-row" style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:22px;width:36px;height:36px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center">${e.icon}</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:800;color:#fff">Dia ${e.day} · ${e.time} — ${e.name}</div><div style="font-size:12px;color:var(--text2);margin-top:2px">${e.desc}</div></div>
+        <span class="tag" style="background:${gameColor[e.game]||'var(--violet)'}22;color:${gameColor[e.game]||'var(--violet)'};border:1px solid ${gameColor[e.game]||'var(--violet)'}33">${e.game}</span>
+        <button class="action-btn danger" onclick="deleteEvent(${e.day})">Remover</button>
+      </div>
+    `).join('') || '<p style="color:var(--text2);font-size:13px">Nenhum evento ainda.</p>';
+  } catch(e) { toast('Erro schedule: ' + e.message, 'error'); }
+}
+
+async function addEvent() {
+  const body = { day: +document.getElementById('ev-day').value, time: document.getElementById('ev-time').value, icon: document.getElementById('ev-icon').value||'🎮', name: document.getElementById('ev-name').value, desc: document.getElementById('ev-desc').value, game: document.getElementById('ev-game').value };
+  if (!body.day || !body.name) { toast('Preencha dia e nome!', 'warn'); return; }
+  try { await Auth.post('/admin/schedule', body); toast('Evento adicionado!', 'success'); await loadSchedule(); }
+  catch(e) { toast(e.message, 'error'); }
+}
+
+async function deleteEvent(day) {
+  try { await Auth.delete('/admin/schedule/' + day); toast('Evento removido', 'success'); await loadSchedule(); }
+  catch(e) { toast(e.message, 'error'); }
+}
+
+// USERS
+async function loadUsers() {
+  try {
+    const users = await Auth.get('/admin/users');
+    document.getElementById('users-count').textContent = '(' + users.length + ')';
+    document.getElementById('users-table').innerHTML = users.map(u => `
+      <tr>
+        <td><div class="user-name-cell"><div class="table-avatar">${u.profile?.avatar?`<img src="${u.profile.avatar}">`:(u.profile?.badges?.[0]||'🎮')}</div> ${u.username}</div></td>
+        <td><span class="name-${u.profile?.nameEffect||'none'}" style="color:${u.profile?.color||'var(--text)'};font-weight:800">${u.profile?.displayName||u.username}</span></td>
+        <td>${u.profile?.nameEffect||'none'}</td>
+        <td><span class="role-badge ${u.role==='admin'?'role-admin':'role-viewer'}">${u.role}</span></td>
+        <td style="color:var(--text2);font-size:12px">${fmtDate(u.createdAt)}</td>
+        <td>${u.role!=='admin'?`<button class="action-btn danger" onclick="deleteUser('${u.id}')">Remover</button>`:'<span style="opacity:.3;font-size:11px">—</span>'}</td>
+      </tr>
+    `).join('');
+  } catch(e) { toast('Erro: ' + e.message, 'error'); }
+}
+
+async function createUser() {
+  const body = { username: document.getElementById('nu-username').value, password: document.getElementById('nu-password').value, displayName: document.getElementById('nu-display').value, color: document.getElementById('nu-color').value, nameEffect: document.getElementById('nu-effect').value };
+  if (!body.username || !body.password) { toast('Usuário e senha obrigatórios!', 'warn'); return; }
+  try {
+    await Auth.post('/admin/users/create', body);
+    toast('Conta criada para ' + (body.displayName||body.username) + '!', 'success');
+    document.getElementById('nu-username').value = '';
+    document.getElementById('nu-password').value = '';
+    document.getElementById('nu-display').value = '';
+    await loadUsers();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function deleteUser(id) {
+  if (!confirm('Remover este usuário?')) return;
+  try { await Auth.delete('/admin/users/' + id); toast('Usuário removido', 'success'); await loadUsers(); }
+  catch(e) { toast(e.message, 'error'); }
+}
+
+// color preview
+document.getElementById('nu-color').addEventListener('input', e => {
+  document.getElementById('nu-color-preview').style.color = e.target.value;
+});
+document.getElementById('nu-effect').addEventListener('change', e => {
+  const prev = document.getElementById('nu-color-preview');
+  prev.className = 'name-' + e.target.value;
+});
+
+loadAll();
+</script>
+</body>
+</html>

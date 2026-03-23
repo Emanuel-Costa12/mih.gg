@@ -1,0 +1,112 @@
+{
+  "users": [
+    {
+      "id": "admin-001",
+      "username": "Mih",
+      "password": "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy",
+      "role": "admin",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "profile": {
+        "displayName": "Mih",
+        "color": "#a8f0b0",
+        "nameEffect": "glow",
+        "avatar": null,
+        "bio": "Dona do site 👾",
+        "badges": ["👑", "🎮", "⚡"]
+      }
+    }
+  ],
+  "siteConfig": {
+    "status": "online",
+    "currentGame": "Valorant",
+    "statusMessage": "Subindo de rank!",
+    "streamUrl": "",
+    "isLive": false,
+    "games": {
+      "valorant": {
+        "rank": "Diamond II",
+        "rr": 63,
+        "winRate": 68,
+        "kd": 2.4,
+        "matches": 247,
+        "mainAgents": ["Jett", "Sage", "Clove", "Raze"],
+        "agentIcons": ["🌪️", "🌿", "💊", "💥"]
+      },
+      "overwatch": {
+        "rank": "Platinum III",
+        "sr": 2480,
+        "winRate": 61,
+        "matches": 183,
+        "mainHeroes": ["Ana", "Kiriko", "Tracer", "Sojourn"],
+        "heroIcons": ["💉", "🌸", "⚡", "🎯"],
+        "healPerGame": 18000
+      },
+      "minecraft": {
+        "activeWorld": "Mundo Survival",
+        "hours": 340,
+        "version": "1.21.4",
+        "worlds": ["Survival Principal", "SMP Friends", "Creative Build"]
+      }
+    },
+    "lastUpdated": "2026-03-22T00:00:00.000Z"
+  },
+  "posts": [
+    {
+      "id": "post-001",
+      "title": "Como Subir de Elo no Valorant em 2026",
+      "content": "Dicas práticas de gameplay, posicionamento e mentalidade que me levaram do Gold ao Diamond em 3 meses! O segredo está na consistência e em nunca tiltar.",
+      "game": "Valorant",
+      "emoji": "🔪",
+      "exclusive": false,
+      "likes": 284,
+      "likedBy": [],
+      "comments": [],
+      "createdAt": "2026-03-18T00:00:00.000Z"
+    },
+    {
+      "id": "post-002",
+      "title": "Ana: Guia Completo para Iniciantes",
+      "content": "A Ana é a minha main no OW2. Vou te ensinar posicionamento, timing dos nades e quando usar o sleep dart para virar partidas impossíveis!",
+      "game": "Overwatch",
+      "emoji": "🛡️",
+      "exclusive": false,
+      "likes": 197,
+      "likedBy": [],
+      "comments": [],
+      "createdAt": "2026-03-12T00:00:00.000Z"
+    },
+    {
+      "id": "post-003",
+      "title": "5 Farms Automáticas Essenciais no 1.21",
+      "content": "Ferro, xp, madeira e mais — aprenda a fazer as farms que vão turbinar seu mundo survival de vez! Tutorial completo com prints do meu mundo.",
+      "game": "Minecraft",
+      "emoji": "🏰",
+      "exclusive": false,
+      "likes": 431,
+      "likedBy": [],
+      "comments": [],
+      "createdAt": "2026-03-05T00:00:00.000Z"
+    },
+    {
+      "id": "post-004",
+      "title": "Minha Setup Gamer Completa 2026",
+      "content": "Finalmente revelando tudo: monitor, headset, teclado, mouse e o que faz diferença de verdade. Conteúdo exclusivo para quem me acompanha de perto!",
+      "game": "Geral",
+      "emoji": "💻",
+      "exclusive": true,
+      "likes": 89,
+      "likedBy": [],
+      "comments": [],
+      "createdAt": "2026-03-20T00:00:00.000Z"
+    }
+  ],
+  "schedule": [
+    { "day": 3,  "time": "21h", "icon": "⚔️", "name": "Ranked Valorant", "desc": "Push pro Immortal!", "game": "Valorant" },
+    { "day": 7,  "time": "20h", "icon": "🛡️", "name": "Overwatch Comp.", "desc": "Flex support", "game": "Overwatch" },
+    { "day": 10, "time": "19h", "icon": "⛏️", "name": "Minecraft SMP",   "desc": "Build da cidade", "game": "Minecraft" },
+    { "day": 14, "time": "21h", "icon": "⚔️", "name": "Val. Duo Ranked", "desc": "Com os amigos!", "game": "Valorant" },
+    { "day": 18, "time": "20h", "icon": "🎮", "name": "Game Night",      "desc": "Jogo surpresa!", "game": "Geral" },
+    { "day": 22, "time": "21h", "icon": "🛡️", "name": "OW2 Competitivo", "desc": "Subindo de rank", "game": "Overwatch" },
+    { "day": 25, "time": "19h", "icon": "⛏️", "name": "Minecraft Farm",  "desc": "Fazendinha nova", "game": "Minecraft" }
+  ]
+}
