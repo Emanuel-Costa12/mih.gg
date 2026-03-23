@@ -80,8 +80,8 @@ app.post('/api/auth/login', async (req, res) => {
   const user = db.users.find(u => u.username.toLowerCase() === username.toLowerCase());
   if (!user) return res.status(401).json({ error: 'Usuário não encontrado' });
 
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid) return res.status(401).json({ error: 'Senha incorreta' });
+const valid = user.password === password || await bcrypt.compare(password, user.password);
+if (!valid) return res.status(401).json({ error: 'Senha incorreta' });
 
   const token = jwt.sign(
     { id: user.id, username: user.username, role: user.role },
